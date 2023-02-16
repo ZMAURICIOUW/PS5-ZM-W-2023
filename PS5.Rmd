@@ -1,0 +1,291 @@
+---
+title: "ps5-rmarkdown"
+author: "Zerelda Mauricio"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+### 1: Load and Check Data
+**1.** Here is the rmarkdown document!
+
+**2.** 
+```{r, message = FALSE}
+library(tidyverse)
+getwd()
+gm <- read_delim("../../Data/gapminder.csv.bz2")
+```
+Inside the _gapminder_ data, we have **`r nrow(gm)`** rows and **`r ncol(gm)`** columns.
+
+**3.**
+```{r, message = FALSE}
+gm %>% 
+  sample_n(3) %>% 
+  knitr::kable()
+```
+The sample data looks ok, so I think the dataframe is good!
+
+
+### 2: Descriptive Statistics
+**1.**
+```{r, message = FALSE}
+gm %>% 
+  select(iso3, name, iso2) %>% 
+  summarise(countryNum = n_distinct(name), iso2Num = n_distinct(iso2), 
+            iso3Num = n_distinct(iso3)) %>% 
+  knitr::kable()
+```
+
+**2.** What is going on seems to be that the function counting the number of distinctions between country codes is also counting the number of "NA" values available, which distorts each of the possible values.
+  **a)**
+```{r iso2NameCount, message = FALSE}
+iso2Count <- gm %>% 
+  group_by(iso2) %>% 
+  select(name, iso2) %>% 
+  summarise(iso2Num = n_distinct(name)) %>% 
+  arrange(desc(iso2Num)) %>% 
+  head(1)
+```
+
+  The only iso2 code that seems to contain more than one name is the value [Country, Region]: `r iso2Count`.
+  
+  **b)** 
+```{r, message = FALSE}
+gm %>% 
+  group_by(name) %>% 
+  select(name, iso3) %>% 
+  summarize(iso3Num = n_distinct(iso3)) %>% 
+  arrange(desc(iso3Num))
+
+gm %>% 
+  group_by(iso3) %>% 
+  filter(is.na(name)) %>% 
+  summarize(iso3Num = n_distinct(iso3)) %>% 
+  select(iso3)
+```
+ 
+**3.** 
+```{r, message = FALSE}
+latest <- gm %>% 
+  select(time) %>% 
+  arrange(desc(time)) %>% 
+  head(1) 
+
+earliest <- gm %>% 
+  select(time) %>% 
+  arrange(time) %>% 
+  head(1)
+```
+
+  The minimum, or earliest year, is `r earliest`, while the maximum or latest year is `r latest`.
+  
+  
+### 3: CO2 Emissions
+**1.** 
+```{r, message = FALSE}
+gm %>% 
+  group_by(time) %>% 
+  summarize(naVal = sum(is.na(co2)), naVal2 = sum(is.na(co2_PC))) %>% 
+  arrange(desc(naVal)) %>% 
+  head(5)
+```
+The years that seem to have the most missing are 2017 through 2019, followed by the earliest years, starting at 1960. Why 2017 and 2019 have so many missing values, I do not know.
+(I was told by a TA that all of my calculations are correct, but that my co2_PC [aka naVal2] should not be displaying any NA values. They could not figure out why both display the same amount of NA values, but they verified that my pipe loop was correct.)
+
+**2.** 
+```{r, message = FALSE}
+co2Total <- gm %>% 
+  group_by(iso3, time) %>% 
+  filter(!is.na(co2), !is.na(name)) %>% 
+  summarize(co2mean = mean(co2)) %>% 
+  filter(iso3 == "USA" | iso3 == "CHN" | iso3 == "IND" | iso3 == "IDN"
+         | iso3 == "ALB" | iso3 == "AGO")
+
+ggplot(data = co2Total) +
+      geom_point(mapping = aes(time, co2mean)) +
+      facet_wrap(~iso3)
+```
+
+**3.**
+```{r, message = FALSE}
+co2PCTotal <- gm %>% 
+  group_by(iso3, time) %>% 
+  filter(!is.na(co2_PC), !is.na(name)) %>% 
+  summarize(co2PCmean = mean(co2_PC)) %>% 
+  filter(iso3 == "USA" | iso3 == "CHN" | iso3 == "IND" | iso3 == "IDN"
+         | iso3 == "ALB" | iso3 == "AGO")
+
+ggplot(data = co2PCTotal) +
+      geom_point(mapping = aes(time, co2PCmean)) +
+      facet_wrap(~iso3)
+```
+
+**4.** 
+```{r, message = FALSE}
+emissions <- gm %>% 
+  group_by(region) %>% 
+  select(region, co2_PC, time) %>% 
+  filter(time == "2016") %>% 
+  filter(!is.na(co2_PC), !is.na(region)) %>% 
+  summarize(co2mean = mean(co2_PC))
+  
+```
+
+**5.**
+```{r, message = FALSE}
+comparison <- gm %>% 
+  group_by(region, time) %>% 
+  filter(!is.na(co2_PC), !is.na(name)) %>% 
+  summarize(co2PCmean = mean(co2_PC)) %>% 
+  filter(time == 1960 | time == 2016)
+
+ggplot(data = comparison, 
+       aes(x = region, y = co2PCmean, fill = as.factor(time))) +
+  geom_bar(stat = "identity", position = "dodge")
+```
+
+**6.**
+
+I was informed for number 6 that due to the high amount of missing values for 2019, 2016 should be used instead. I have codes for both:
+
+CODE FOR CO2 EMITTERS FOR 2019
+```{r}
+gm %>%
+  group_by(region) %>% 
+  filter(!is.na(co2_PC)) %>% 
+  select(name, co2_PC, time) %>% 
+  filter(time == "2019")
+```
+
+CODE FOR CO2 EMITTERS FOR 2016
+```{r}
+co2Rank <- gm %>%
+  group_by(region) %>% 
+  filter(!is.na(co2_PC) & !is.na(name) & !is.na(region)) %>% 
+  select(name, co2_PC, time) %>% 
+  filter(time == "2016") %>%
+  arrange(desc(co2_PC))
+
+gm %>% 
+  filter(name %in% co2Rank) %>% 
+  filter(rank(desc(co2_PC)) < 4)
+```
+
+
+
+### 4: GDP per Capita
+**1.**
+```{r, message = FALSE}
+GDP <- gm %>% 
+  group_by(name) %>% 
+  filter(!is.na(GDP_PC) & !is.na(lifeExpectancy)) %>% 
+  select(region, GDP_PC, lifeExpectancy, time, totalPopulation) %>% 
+  filter(time == "1960")
+
+ggplot(data = GDP) +
+  geom_point(mapping = aes(x = GDP_PC, y = lifeExpectancy, color = region, size = totalPopulation))
+```
+There is a stark difference around the 5000 GDP_PC mark. Where the life expectancy could be anything for those lower than ~5000 GDP per capita, after 5000 it sharply inclines and then levels out around the 70-80 mark.
+
+**2.**
+```{r, message = FALSE}
+GDP2019 <- gm %>% 
+  group_by(name) %>% 
+  filter(!is.na(GDP_PC) & !is.na(lifeExpectancy)) %>% 
+  select(region, GDP_PC, lifeExpectancy, time, totalPopulation) %>% 
+  filter(time == "2019")
+
+ggplot(data = GDP2019) +
+  geom_point(mapping = aes(x = GDP_PC, y = lifeExpectancy, color = region, size = totalPopulation))
+```
+It seems that more countries are present here with existing GDPs and reported life expectancies.
+
+**3.** Do we overlay these two or just comment on it?
+While it looks like there is a more immediate incline for the 2019 graph that would indicate a higher life expectancy with a lower GDP, you can actually see that the 2019 graph has a much higher GDP limit. This 
+
+**4.**
+```{r, message = FALSE}
+lifeComp <- gm %>% 
+  group_by(region, time) %>% 
+  filter(!is.na(lifeExpectancy), !is.na(name)) %>%  
+  summarize(lifeEXPmean = mean(lifeExpectancy)) %>% 
+  filter(time == 1960 | time == 2016)
+
+ggplot(data = lifeComp, 
+       aes(x = region, y = lifeEXPmean, fill = as.factor(time))) +
+  geom_bar(stat = "identity", position = "dodge")
+```
+
+The figure seems to align pretty well with both of the two plots, with Europe having had the highest life expectancy in 1960 in both the GDP plot and the LifeExp graph, and with everyone having an improved average life expectancy by 2016 in comparison to their 1960 versions.
+
+**5.** 
+```{r, message = FALSE}
+leGrowth <- gm %>% 
+  group_by(time, region) %>% 
+  select(region, lifeExpectancy, time) %>%
+  filter(!is.na(lifeExpectancy) & !is.na(region)) %>% 
+  mutate(lifeEXPMean = mean(lifeExpectancy))
+
+  ggplot(data = leGrowth,
+         aes(time, lifeEXPMean, col = region)) +
+  geom_line()
+```
+
+**6.** 
+GDP Histogram of _all countries,_ with 1960 and 2019 combined (it's rough):
+
+```{r, message = FALSE}
+gdpHist <- gm %>% 
+  group_by(region) %>% 
+  select(iso3, GDP_PC, time) %>% 
+  filter(!is.na(iso3), !is.na(GDP_PC)) %>% 
+  filter(time == "1960" | time == "2019")
+
+ggplot(data = gdpHist, 
+       aes(x = iso3, y = GDP_PC, fill = as.factor(time))) +
+  geom_bar(stat = "identity", position = "dodge")
+```
+GDP Histogram of _all continents,_ with 1960 and 2019 combined (it's _less_ rough):
+```{r, message=FALSE}
+gdpHist <- gm %>% 
+  group_by(region) %>% 
+  select(GDP_PC, time) %>% 
+  filter(!is.na(region), !is.na(GDP_PC)) %>% 
+  filter(time == "1960" | time == "2019")
+
+ggplot(data = gdpHist, 
+       aes(x = region, y = GDP_PC, fill = as.factor(time))) +
+  geom_bar(stat = "identity", position = "dodge")
+```
+
+**7.**
+
+FOR LIFE EXPECTANCY IN 1960
+```{r}
+gm %>% 
+  select(name, lifeExpectancy, time) %>% 
+  filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
+  filter(time == "1960") %>%
+  arrange(desc(lifeExpectancy))
+  
+```
+
+
+FOR LIFE EXPECTANCY IN 2019
+```{r}
+gm %>% 
+  select(name, lifeExpectancy, time) %>% 
+  filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
+  filter(time == "2019") %>% 
+  arrange(desc(lifeExpectancy))
+```
+
+The ranking of the US for 1960 was 17th place with a life expectancy of 69.7703, while its ranking for 2019 was 46th place with a life expectancy of 78.78780.
+
+**8.**
+
+
+
+
+TOTAL TIME SPENT ON THIS PS:
+
+
