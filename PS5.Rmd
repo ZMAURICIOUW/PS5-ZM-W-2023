@@ -8,13 +8,16 @@ output: html_document
 ### 1: Load and Check Data
 **1.** Here is the rmarkdown document!
 
+
 **2.** 
 ```{r, message = FALSE}
 library(tidyverse)
 getwd()
 gm <- read_delim("../../Data/gapminder.csv.bz2")
 ```
+
 Inside the _gapminder_ data, we have **`r nrow(gm)`** rows and **`r ncol(gm)`** columns.
+
 
 **3.**
 ```{r, message = FALSE}
@@ -22,7 +25,10 @@ gm %>%
   sample_n(3) %>% 
   knitr::kable()
 ```
+
 The sample data looks ok, so I think the dataframe is good!
+
+
 
 
 ### 2: Descriptive Statistics
@@ -35,7 +41,9 @@ gm %>%
   knitr::kable()
 ```
 
+
 **2.** What is going on seems to be that the function counting the number of distinctions between country codes is also counting the number of "NA" values available, which distorts each of the possible values.
+
   **a)**
 ```{r iso2NameCount, message = FALSE}
 iso2Count <- gm %>% 
@@ -46,16 +54,10 @@ iso2Count <- gm %>%
   head(1)
 ```
 
-  The only iso2 code that seems to contain more than one name is the value [Country, Region]: `r iso2Count`.
+The only iso2 code that seems to contain more than one name is the value _[Country, Region]_: **`r iso2Count`.**
   
   **b)** 
 ```{r, message = FALSE}
-gm %>% 
-  group_by(name) %>% 
-  select(name, iso3) %>% 
-  summarize(iso3Num = n_distinct(iso3)) %>% 
-  arrange(desc(iso3Num))
-
 gm %>% 
   group_by(iso3) %>% 
   filter(is.na(name)) %>% 
@@ -63,6 +65,9 @@ gm %>%
   select(iso3)
 ```
  
+ There are **4 country names** that have more than 1 iso3 code. This includes the entities of _CHANISL, GBM, KOS,_ and _NLD_CURACAO._
+
+
 **3.** 
 ```{r, message = FALSE}
 latest <- gm %>% 
@@ -70,13 +75,19 @@ latest <- gm %>%
   arrange(desc(time)) %>% 
   head(1) 
 
+latest
+
 earliest <- gm %>% 
   select(time) %>% 
   arrange(time) %>% 
   head(1)
+
+earliest
 ```
 
-  The minimum, or earliest year, is `r earliest`, while the maximum or latest year is `r latest`.
+  The minimum, or earliest year in the data, is **`r earliest`,** while the maximum or latest year is **`r latest`.**
+  
+  
   
   
 ### 3: CO2 Emissions
@@ -88,8 +99,10 @@ gm %>%
   arrange(desc(naVal)) %>% 
   head(5)
 ```
-The years that seem to have the most missing are 2017 through 2019, followed by the earliest years, starting at 1960. Why 2017 and 2019 have so many missing values, I do not know.
+The years that seem to have the most missing are **2017 through 2019,** having _217 missing values,_ followed by the earliest years, **starting at 1960,** with _60 missing values._ Why 2017 through 2019 have so many missing values, I do not know.
+
 (I was told by a TA that all of my calculations are correct, but that my co2_PC [aka naVal2] should not be displaying any NA values. They could not figure out why both display the same amount of NA values, but they verified that my pipe loop was correct.)
+
 
 **2.** 
 ```{r, message = FALSE}
@@ -105,6 +118,9 @@ ggplot(data = co2Total) +
       facet_wrap(~iso3)
 ```
 
+This is a set of scatter plots depicting the CO2 emissions over time for the US, China, India, Indonesia, Albania, and Angola between the years of 1960 and 2019. The US, China, and India are the graphs with significant inclines moving into the year 2000 and onward, with China showing a steep incline after the 2000 mark and beating out the USA's slow but much higher and much more constant growth. In comparison to these three, Indonesia, Albania, and Angola's growth is negligible.
+
+
 **3.**
 ```{r, message = FALSE}
 co2PCTotal <- gm %>% 
@@ -119,16 +135,22 @@ ggplot(data = co2PCTotal) +
       facet_wrap(~iso3)
 ```
 
+This is, like the last graph, scatter plots depicting the CO2 emissions _per capita_ over time for the US, China, India, Indonesia, Albania, and Angola between the years of 1960 and 2019. There is a stark contrast here with the last graph in the sense that while the _last_ graph showed that China produced the most CO2 in the current day, _this_ graph shows that the US has the most emissions. This suggests that though China produces more overall, it is more concentrated to areas of intense production or concentrated blocks of factories. We can see that for the US, there is a much more _consistent_ and _higher_ rate of CO2 emission for each area, producing CO2 everywhere at a larger capacity on average than China.
+
+
 **4.** 
 ```{r, message = FALSE}
-emissions <- gm %>% 
+gm %>% 
   group_by(region) %>% 
   select(region, co2_PC, time) %>% 
   filter(time == "2016") %>% 
   filter(!is.na(co2_PC), !is.na(region)) %>% 
-  summarize(co2mean = mean(co2_PC))
-  
+  summarize(co2mean = mean(co2_PC)) %>% 
+  arrange(desc(co2mean))
 ```
+
+Across all the continents, the average CO2 per capita was _highest_ in **Europe,** with Asia close behind by barely a difference of 0.2. The _lowest_ output was **Africa,** which had an average of 1.2 per capita in comparison to Europe's 6.6. The ranges seem to line up with how the above graphs in questions 2 and 3 (showing the comparative scatterplot graphs) depict the CO2 emissions from countries from each continent.
+
 
 **5.**
 ```{r, message = FALSE}
@@ -143,8 +165,10 @@ ggplot(data = comparison,
   geom_bar(stat = "identity", position = "dodge")
 ```
 
-**6.**
+This barplot shows the previous results–average CO2 emissions per capita across continents in 1960 and 2016. **Africa** has the _lowest_ overall average, while **Europe** goes on to beat out America's average in 2016 despite **America** being the far _greater CO2 emitter during 1960._
 
+
+**6.**
 I was informed for number 6 that due to the high amount of missing values for 2019, 2016 should be used instead. I have codes for both:
 
 CODE FOR CO2 EMITTERS FOR 2019
@@ -170,6 +194,8 @@ gm %>%
   filter(rank(desc(co2_PC)) < 4)
 ```
 
+????? ASK ABOUT IN OFFICE HOURS
+
 
 
 ### 4: GDP per Capita
@@ -184,7 +210,9 @@ GDP <- gm %>%
 ggplot(data = GDP) +
   geom_point(mapping = aes(x = GDP_PC, y = lifeExpectancy, color = region, size = totalPopulation))
 ```
-There is a stark difference around the 5000 GDP_PC mark. Where the life expectancy could be anything for those lower than ~5000 GDP per capita, after 5000 it sharply inclines and then levels out around the 70-80 mark.
+
+There is a stark difference **around the 5000 GDP_PC mark.** Where the life expectancy could be anything for _those lower than ~5000 GDP per capita,_ after 5000 it **sharply inclines** and then levels out around the 70-80 mark. It is interesting to note that country size does _not_ seem to matter in relations to GDP, but _does_ imply a higher baseline life expectancy (even if not by much, with expectancies as low as the 40 year mark).
+
 
 **2.**
 ```{r, message = FALSE}
@@ -197,10 +225,12 @@ GDP2019 <- gm %>%
 ggplot(data = GDP2019) +
   geom_point(mapping = aes(x = GDP_PC, y = lifeExpectancy, color = region, size = totalPopulation))
 ```
-It seems that more countries are present here with existing GDPs and reported life expectancies.
 
-**3.** Do we overlay these two or just comment on it?
-While it looks like there is a more immediate incline for the 2019 graph that would indicate a higher life expectancy with a lower GDP, you can actually see that the 2019 graph has a much higher GDP limit. This 
+It seems that more countries are present here with existing GDPs and reported life expectancies, and that the countries seem to be more sectioned off to their own sections. Many of the African countries do _not_ have high life expectancies, none of the reported countries reaching above 80. While more countries have a larger population, the countries with preexisting large populations have moved up on the scale to have _longer_ life expectancies.
+
+
+**3.** While it looks like there is a more immediate incline for the 2019 graph that would indicate a higher life expectancy with a lower GDP, you can actually see that the 2019 graph has a much higher GDP limit. This implies that not only has inflation deeply affected the GDPs of nations worldwide, but also that the countries that are closer to 0 are susbsisting off of much less than they did before. Overall, 2019 has higher bounds for everything- a higher general life expectancy, and easily much higher GDPs. But this increase does not immediately imply a positive development, since the color coordination of the plot points show the the countries have become far more concentrated into specific continents dominating certain regions. This can especially be seen for Africa, which has been harshly relegated to both having generally lower GDPs and lower life expectancies.
+
 
 **4.**
 ```{r, message = FALSE}
@@ -215,7 +245,8 @@ ggplot(data = lifeComp,
   geom_bar(stat = "identity", position = "dodge")
 ```
 
-The figure seems to align pretty well with both of the two plots, with Europe having had the highest life expectancy in 1960 in both the GDP plot and the LifeExp graph, and with everyone having an improved average life expectancy by 2016 in comparison to their 1960 versions.
+The figure seems to align pretty well with both of the two plots, with **Europe** having had the _highest life expectancy in 1960_ in both the GDP plot and the LifeExp graph, and **Africa** having the _lowest life expectancy in 1960_ according to the two figures. Another visual confirmation is that between the two figures, **all continents** have an _improved average life expectancy by 2016_ in comparison to their 1960 versions.
+
 
 **5.** 
 ```{r, message = FALSE}
@@ -230,9 +261,11 @@ leGrowth <- gm %>%
   geom_line()
 ```
 
+Despite **Africa** having the _lowest overall life expectancy average,_ it is ALSO the continent with the _highest overall growth_ in life expectancy average. All other continents had much higher starting life expectancies (with **Europe** being the _highest initial and ending life expectancy_ and **Asia** eventually going from _the lowest before Africa to being the middle average_), they _did not_ display higher growth.
+
+
 **6.** 
 GDP Histogram of _all countries,_ with 1960 and 2019 combined (it's rough):
-
 ```{r, message = FALSE}
 gdpHist <- gm %>% 
   group_by(region) %>% 
@@ -244,6 +277,9 @@ ggplot(data = gdpHist,
        aes(x = iso3, y = GDP_PC, fill = as.factor(time))) +
   geom_bar(stat = "identity", position = "dodge")
 ```
+
+This is a histogram of _all countries_ and their GDP comparisons between 1960 and 2019.
+
 GDP Histogram of _all continents,_ with 1960 and 2019 combined (it's _less_ rough):
 ```{r, message=FALSE}
 gdpHist <- gm %>% 
@@ -257,8 +293,10 @@ ggplot(data = gdpHist,
   geom_bar(stat = "identity", position = "dodge")
 ```
 
-**7.**
+This is a histogram of _all continents_ and their GDP comparisons between 1960 and 2019.
 
+
+**7.**
 FOR LIFE EXPECTANCY IN 1960
 ```{r}
 gm %>% 
@@ -268,7 +306,6 @@ gm %>%
   arrange(desc(lifeExpectancy))
   
 ```
-
 
 FOR LIFE EXPECTANCY IN 2019
 ```{r}
@@ -280,6 +317,7 @@ gm %>%
 ```
 
 The ranking of the US for 1960 was 17th place with a life expectancy of 69.7703, while its ranking for 2019 was 46th place with a life expectancy of 78.78780.
+
 
 **8.**
 
