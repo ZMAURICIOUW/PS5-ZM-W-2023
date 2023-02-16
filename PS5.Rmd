@@ -44,7 +44,7 @@ gm %>%
 
 **2.** What is going on seems to be that the function counting the number of distinctions between country codes is also counting the number of "NA" values available, which distorts each of the possible values.
 
-  **a)**
+  * **a)**
 ```{r iso2NameCount, message = FALSE}
 iso2Count <- gm %>% 
   group_by(iso2) %>% 
@@ -56,7 +56,7 @@ iso2Count <- gm %>%
 
 The only iso2 code that seems to contain more than one name is the value _[Country, Region]_: **`r iso2Count`.**
   
-  **b)** 
+  * **b)** 
 ```{r, message = FALSE}
 gm %>% 
   group_by(iso3) %>% 

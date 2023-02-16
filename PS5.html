@@ -430,84 +430,84 @@ rows and <strong>25</strong> columns.</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">TKM</td>
-<td align="left">Turkmenistan</td>
-<td align="left">TM</td>
-<td align="left">Asia</td>
-<td align="left">Central Asia</td>
-<td align="left">NA</td>
-<td align="right">1975</td>
-<td align="right">2525364</td>
-<td align="right">5.926</td>
-<td align="right">59.70300</td>
+<td align="left">TZA</td>
+<td align="left">Tanzania, United Republic of</td>
+<td align="left">TZ</td>
+<td align="left">Africa</td>
+<td align="left">Sub-Saharan Africa</td>
+<td align="left">Eastern Africa</td>
+<td align="right">1993</td>
+<td align="right">27887203</td>
+<td align="right">6.013</td>
+<td align="right">49.529</td>
+<td align="right">159.5</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">24581.98</td>
-<td align="right">NA</td>
+<td align="right">484.3753</td>
+<td align="right">4.16666</td>
+<td align="right">323059.9</td>
+<td align="right">7470</td>
+<td align="right">3916590</td>
+<td align="right">4.07865</td>
+<td align="right">2475.225</td>
+<td align="right">75693.156</td>
+<td align="right">0.08876</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
-<td align="left">AUS</td>
-<td align="left">Australia</td>
-<td align="left">AU</td>
-<td align="left">Oceania</td>
-<td align="left">Australia and New Zealand</td>
+<td align="left">PSE</td>
+<td align="left">Palestine, State of</td>
+<td align="left">PS</td>
+<td align="left">Asia</td>
+<td align="left">Western Asia</td>
 <td align="left">NA</td>
-<td align="right">1971</td>
-<td align="right">12937000</td>
-<td align="right">2.961</td>
-<td align="right">71.06829</td>
-<td align="right">21</td>
+<td align="right">1990</td>
+<td align="right">1978248</td>
+<td align="right">6.718</td>
+<td align="right">68.048</td>
+<td align="right">44.5</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
-<td align="right">26263.45</td>
 <td align="right">NA</td>
-<td align="right">4995362</td>
-<td align="right">331417</td>
-<td align="right">14840092</td>
-<td align="right">63.34988</td>
-<td align="right">152774.6</td>
-<td align="right">314446.15</td>
-<td align="right">11.80912</td>
 <td align="right">NA</td>
+<td align="right">3750.0</td>
+<td align="right">4820</td>
+<td align="right">NA</td>
+<td align="right">NA</td>
+<td align="right">861.745</td>
+<td align="right">NA</td>
+<td align="right">0.43561</td>
+<td align="right">36.37307</td>
 <td align="right">NA</td>
 </tr>
 <tr class="odd">
-<td align="left">SXM</td>
-<td align="left">Sint Maarten (Dutch part)</td>
-<td align="left">SX</td>
+<td align="left">BRB</td>
+<td align="left">Barbados</td>
+<td align="left">BB</td>
 <td align="left">Americas</td>
 <td align="left">Latin America and the Caribbean</td>
 <td align="left">Caribbean</td>
-<td align="right">1964</td>
-<td align="right">4067</td>
+<td align="right">1990</td>
+<td align="right">260936</td>
+<td align="right">1.740</td>
+<td align="right">74.704</td>
+<td align="right">18.1</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
+<td align="right">14396.2504</td>
+<td align="right">100.00000</td>
+<td align="right">190.0</td>
 <td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
+<td align="right">2300</td>
+<td align="right">168.75000</td>
+<td align="right">1070.764</td>
+<td align="right">1199.667</td>
+<td align="right">4.10355</td>
+<td align="right">0.00000</td>
 <td align="right">NA</td>
 </tr>
 </tbody>
@@ -542,7 +542,9 @@ rows and <strong>25</strong> columns.</p>
 counting the number of distinctions between country codes is also
 counting the number of “NA” values available, which distorts each of the
 possible values.</p>
-<p><strong>a)</strong></p>
+<ul>
+<li><strong>a)</strong></li>
+</ul>
 <pre class="r"><code>iso2Count &lt;- gm %&gt;% 
   group_by(iso2) %&gt;% 
   select(name, iso2) %&gt;% 
@@ -551,7 +553,9 @@ possible values.</p>
   head(1)</code></pre>
 <p>The only iso2 code that seems to contain more than one name is the
 value <em>[Country, Region]</em>: <strong>NA, 2.</strong></p>
-<p><strong>b)</strong></p>
+<ul>
+<li><strong>b)</strong></li>
+</ul>
 <pre class="r"><code>gm %&gt;% 
   group_by(iso3) %&gt;% 
   filter(is.na(name)) %&gt;% 
