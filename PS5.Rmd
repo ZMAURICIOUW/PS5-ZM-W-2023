@@ -141,15 +141,14 @@ This is, like the last graph, scatter plots depicting the CO2 emissions _per cap
 **4.** 
 ```{r, message = FALSE}
 gm %>% 
-  group_by(region) %>% 
   select(region, co2_PC, time) %>% 
-  filter(time == "2016") %>% 
+  filter(time == "2016" | time == "1960") %>% 
   filter(!is.na(co2_PC), !is.na(region)) %>% 
-  summarize(co2mean = mean(co2_PC)) %>% 
-  arrange(desc(co2mean))
+  group_by(region, time) %>% 
+  summarize(co2mean = mean(co2_PC))
 ```
 
-Across all the continents, the average CO2 per capita was _highest_ in **Europe,** with Asia close behind by barely a difference of 0.2. The _lowest_ output was **Africa,** which had an average of 1.2 per capita in comparison to Europe's 6.6. The ranges seem to line up with how the above graphs in questions 2 and 3 (showing the comparative scatterplot graphs) depict the CO2 emissions from countries from each continent.
+Across all the continents, the average CO2 per capita was _highest_ in **the Americas and Europe** with Asia close behind by barely a difference of 0.2 when compared to Europe in 2016. The _lowest_ output was **Africa,** which had an average of 1.2 per capita in comparison to Europe's 6.6. The ranges seem to line up with how the above graphs in questions 2 and 3 (showing the comparative scatterplot graphs) depict the CO2 emissions from countries from each continent. The growth of CO2 emission for each region shows that America has actively tried to reduce their emissions, while the other continents have grown in CO2 emissions due to not having such high values in 1960.
 
 
 **5.**
@@ -250,17 +249,18 @@ The figure seems to align pretty well with both of the two plots, with **Europe*
 
 **5.** 
 ```{r, message = FALSE}
-leGrowth <- gm %>% 
+gm %>% 
   filter(time == "1960" | time == "2019") %>% 
   filter(!is.na(lifeExpectancy) & !is.na(region)) %>% 
   group_by(region, time) %>% 
   summarize(lifeEXPMean = mean(lifeExpectancy)) %>% 
   group_by(region) %>% 
   summarize(growth = lifeEXPMean - lag(lifeEXPMean)) %>% 
-  filter(!is.na(growth))
+  filter(!is.na(growth)) %>% 
+  arrange(desc(growth))
 ```
 
-Despite **Africa** having the _lowest overall life expectancy average,_ it is ALSO the continent with the _highest overall growth_ in life expectancy average. All other continents had much higher starting life expectancies (with **Europe** being the _highest initial and ending life expectancy_ and **Asia** eventually going from _the lowest before Africa to being the middle average_), however they _did not_ display higher growth.
+Despite **Africa** having the _lowest overall life expectancy average in other graphs,_ it is ALSO the continent with the _highest overall growth_ in life expectancy average. All other continents had much higher starting life expectancies (with **Europe** being the _highest initial and ending life expectancy_ and **Asia** eventually going from _the lowest before Africa to being the middle average_), however they _did not_ display higher growth.
 
 
 **6.** 
@@ -283,7 +283,7 @@ This is a histogram of _all countries_ and their GDP comparisons between 1960 an
 
 **7.**
 FOR LIFE EXPECTANCY IN 1960
-```{r}
+```{r, message = FALSE}
 gm %>% 
   select(name, lifeExpectancy, time) %>% 
   filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
@@ -294,7 +294,7 @@ gm %>%
 ```
 
 FOR LIFE EXPECTANCY IN 2019
-```{r}
+```{r, message = FALSE}
 gm %>% 
   select(name, lifeExpectancy, time) %>% 
   filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
@@ -309,7 +309,7 @@ The ranking of the US for 1960 was 17th place with a life expectancy of 69.7703,
 
 **8.**
 FOR LIFE EXPECTANCY _RANK_ IN 1960
-```{r}
+```{r, message = FALSE}
 gm %>% 
   select(name, lifeExpectancy, time) %>% 
   filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
@@ -321,7 +321,7 @@ gm %>%
 ```
 
 FOR LIFE EXPECTANCY _RANK_ IN 2019
-```{r}
+```{r, message = FALSE}
 gm %>% 
   select(name, lifeExpectancy, time) %>% 
   filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
