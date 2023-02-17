@@ -169,32 +169,32 @@ This barplot shows the previous results–average CO2 emissions per capita acros
 
 
 **6.**
-I was informed for number 6 that due to the high amount of missing values for 2019, 2016 should be used instead. I have codes for both:
+I was informed for number 6 that _due to the high amount of missing values for 2019, 2016 should be used instead._ I have codes for both:
 
 CODE FOR CO2 EMITTERS FOR 2019
 ```{r}
 gm %>%
   group_by(region) %>% 
-  filter(!is.na(co2_PC)) %>% 
-  select(name, co2_PC, time) %>% 
-  filter(time == "2019")
+  filter(!is.na(co2_PC), !is.na(name), !is.na(region)) %>% 
+  filter(time == "2019") %>% 
+  select(region, name, co2_PC) %>%
+  filter(rank(desc(co2_PC)) < 4 | rank(co2_PC) < 4) %>% 
+  mutate(rank = row_number()) %>% 
+  arrange(region, co2_PC)
 ```
 
 CODE FOR CO2 EMITTERS FOR 2016
 ```{r}
-co2Rank <- gm %>%
+gm %>%
   group_by(region) %>% 
-  filter(!is.na(co2_PC) & !is.na(name) & !is.na(region)) %>% 
-  select(name, co2_PC, time) %>% 
-  filter(time == "2016") %>%
-  arrange(desc(co2_PC))
-
-gm %>% 
-  filter(name %in% co2Rank) %>% 
-  filter(rank(desc(co2_PC)) < 4)
+  filter(!is.na(co2_PC), !is.na(name), !is.na(region)) %>% 
+  filter(time == "2016") %>% 
+  select(region, name, co2_PC) %>%
+  filter(rank(desc(co2_PC)) < 4 | rank(co2_PC) < 4) %>%
+  mutate(rank = row_number()) %>%  ##debugging to check
+  arrange(region, co2_PC)
 ```
 
-????? ASK ABOUT IN OFFICE HOURS
 
 
 
@@ -251,49 +251,34 @@ The figure seems to align pretty well with both of the two plots, with **Europe*
 **5.** 
 ```{r, message = FALSE}
 leGrowth <- gm %>% 
-  group_by(time, region) %>% 
-  select(region, lifeExpectancy, time) %>%
+  filter(time == "1960" | time == "2019") %>% 
   filter(!is.na(lifeExpectancy) & !is.na(region)) %>% 
-  mutate(lifeEXPMean = mean(lifeExpectancy))
-
-  ggplot(data = leGrowth,
-         aes(time, lifeEXPMean, col = region)) +
-  geom_line()
+  group_by(region, time) %>% 
+  summarize(lifeEXPMean = mean(lifeExpectancy)) %>% 
+  group_by(region) %>% 
+  summarize(growth = lifeEXPMean - lag(lifeEXPMean)) %>% 
+  filter(!is.na(growth))
 ```
 
-Despite **Africa** having the _lowest overall life expectancy average,_ it is ALSO the continent with the _highest overall growth_ in life expectancy average. All other continents had much higher starting life expectancies (with **Europe** being the _highest initial and ending life expectancy_ and **Asia** eventually going from _the lowest before Africa to being the middle average_), they _did not_ display higher growth.
+Despite **Africa** having the _lowest overall life expectancy average,_ it is ALSO the continent with the _highest overall growth_ in life expectancy average. All other continents had much higher starting life expectancies (with **Europe** being the _highest initial and ending life expectancy_ and **Asia** eventually going from _the lowest before Africa to being the middle average_), however they _did not_ display higher growth.
 
 
 **6.** 
-GDP Histogram of _all countries,_ with 1960 and 2019 combined (it's rough):
+GDP Histogram of _all countries,_ with 1960 and 2019 combined:
 ```{r, message = FALSE}
 gdpHist <- gm %>% 
-  group_by(region) %>% 
+  group_by(region, time) %>% 
   select(iso3, GDP_PC, time) %>% 
   filter(!is.na(iso3), !is.na(GDP_PC)) %>% 
   filter(time == "1960" | time == "2019")
 
 ggplot(data = gdpHist, 
-       aes(x = iso3, y = GDP_PC, fill = as.factor(time))) +
-  geom_bar(stat = "identity", position = "dodge")
+       aes(x = GDP_PC, fill = as.factor(time))) +
+  geom_histogram()
 ```
 
 This is a histogram of _all countries_ and their GDP comparisons between 1960 and 2019.
 
-GDP Histogram of _all continents,_ with 1960 and 2019 combined (it's _less_ rough):
-```{r, message=FALSE}
-gdpHist <- gm %>% 
-  group_by(region) %>% 
-  select(GDP_PC, time) %>% 
-  filter(!is.na(region), !is.na(GDP_PC)) %>% 
-  filter(time == "1960" | time == "2019")
-
-ggplot(data = gdpHist, 
-       aes(x = region, y = GDP_PC, fill = as.factor(time))) +
-  geom_bar(stat = "identity", position = "dodge")
-```
-
-This is a histogram of _all continents_ and their GDP comparisons between 1960 and 2019.
 
 
 **7.**
@@ -303,8 +288,9 @@ gm %>%
   select(name, lifeExpectancy, time) %>% 
   filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
   filter(time == "1960") %>%
-  arrange(desc(lifeExpectancy))
-  
+  arrange(desc(lifeExpectancy)) %>% 
+  mutate(rank = row_number()) %>% 
+  filter(name == "United States of America")
 ```
 
 FOR LIFE EXPECTANCY IN 2019
@@ -313,17 +299,39 @@ gm %>%
   select(name, lifeExpectancy, time) %>% 
   filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
   filter(time == "2019") %>% 
-  arrange(desc(lifeExpectancy))
+  arrange(desc(lifeExpectancy)) %>% 
+  mutate(rank = row_number()) %>% 
+  filter(name == "United States of America")
 ```
 
 The ranking of the US for 1960 was 17th place with a life expectancy of 69.7703, while its ranking for 2019 was 46th place with a life expectancy of 78.78780.
 
 
 **8.**
+FOR LIFE EXPECTANCY _RANK_ IN 1960
+```{r}
+gm %>% 
+  select(name, lifeExpectancy, time) %>% 
+  filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
+  filter(time == "1960") %>%
+  arrange(desc(lifeExpectancy)) %>% 
+  mutate(rank = row_number()) %>% 
+  mutate(placement = rank / n()) %>%
+  filter(name == "United States of America")
+```
 
+FOR LIFE EXPECTANCY _RANK_ IN 2019
+```{r}
+gm %>% 
+  select(name, lifeExpectancy, time) %>% 
+  filter(!is.na(name) & !is.na(time) & !is.na(lifeExpectancy)) %>% 
+  filter(time == "2019") %>%
+  arrange(desc(lifeExpectancy)) %>% 
+  mutate(rank = row_number()) %>% 
+  mutate(placement = rank / n()) %>%
+  filter(name == "United States of America")
+```
 
+The US has a relative rank placement of **0.234** for 2019.
 
-
-TOTAL TIME SPENT ON THIS PS:
-
-
+**TOTAL TIME SPENT ON THIS PS:** I spent 10 hours on this problem set.
